@@ -1,0 +1,25 @@
+# Python / Telegram bot
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+.env
+*.db
+*.sqlite*
+venv/
+.venv/
+.idea/
+.vscode/
+.DS_Store
+
+# Editor temp files
+*.swp
+*.swo
+
+# Test / tool caches
+.pytest_cache/
+.mypy_cache/
+
+# Runtime bot data
+data/
