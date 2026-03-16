@@ -8,13 +8,12 @@ import time
 import uuid
 from contextlib import suppress
 from datetime import datetime, timedelta, timezone
+from html import escape
 from pathlib import Path
 from typing import Any, Awaitable, Callable, Dict, Iterable, Optional
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import pytz
-from html import escape
-from aiohttp import ClientError
 from aiogram import Bot, Dispatcher, F, Router
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
@@ -31,17 +30,18 @@ from aiogram.types import (
     Message,
     User,
 )
+from aiohttp import ClientError
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
 from tzlocal import get_localzone_name
 
-from telegram_meeting_bot.core import constants, logs as log_utils, storage
+from telegram_meeting_bot.core import constants, feature_flags, release_history, storage
+from telegram_meeting_bot.core import logs as log_utils
 from telegram_meeting_bot.core.audit import audit_log
-from telegram_meeting_bot.core import feature_flags, release_history
 from telegram_meeting_bot.core.logging_setup import setup_logging
 from telegram_meeting_bot.core.parsing import parse_meeting_message
-from telegram_meeting_bot.ui import keyboards as ui_kb, texts as ui_txt
-
+from telegram_meeting_bot.ui import keyboards as ui_kb
+from telegram_meeting_bot.ui import texts as ui_txt
 
 CB_NOOP = getattr(constants, "CB_NOOP", None) or getattr(constants, "CB_DISABLED", "noop")
 

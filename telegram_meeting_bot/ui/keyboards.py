@@ -2,9 +2,20 @@ from __future__ import annotations
 
 from typing import Sequence
 
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+)
 
+from ..core import feature_flags
+from ..core import logs as log_utils
 from ..core.constants import (
+    ACTIVE_FILTER_ALL,
+    ACTIVE_FILTER_TODAY,
+    ACTIVE_FILTER_TOMORROW,
+    ACTIVE_FILTER_WEEK,
     CB_ACTIONS,
     CB_ACTIVE,
     CB_ACTIVE_CLEAR,
@@ -13,8 +24,8 @@ from ..core.constants import (
     CB_ADMIN_ADD,
     CB_ADMIN_BACKUP,
     CB_ADMIN_DEL,
-    CB_ADMIN_FLAGS,
     CB_ADMIN_FLAG_TOGGLE,
+    CB_ADMIN_FLAGS,
     CB_ADMIN_HISTORY,
     CB_ADMIN_PANEL,
     CB_ADMIN_STATUS,
@@ -29,10 +40,6 @@ from ..core.constants import (
     CB_CHATS,
     CB_CREATE,
     CB_HELP,
-    CB_MENU,
-    CB_MY,
-    CB_MY_FILTER,
-    CB_MY_PAGE,
     CB_LOGS,
     CB_LOGS_APP,
     CB_LOGS_AUDIT,
@@ -41,6 +48,9 @@ from ..core.constants import (
     CB_LOGS_DOWNLOAD,
     CB_LOGS_ERROR,
     CB_LOGS_FILE,
+    CB_MENU,
+    CB_MY,
+    CB_MY_FILTER,
     CB_OFF_DEC,
     CB_OFF_INC,
     CB_OFF_PRESET_10,
@@ -59,17 +69,11 @@ from ..core.constants import (
     CB_SET_TZ_MOSCOW,
     CB_SETTINGS,
     CB_SHIFT,
-    ACTIVE_FILTER_ALL,
-    ACTIVE_FILTER_TODAY,
-    ACTIVE_FILTER_TOMORROW,
-    ACTIVE_FILTER_WEEK,
     RR_DAILY,
     RR_ONCE,
     RR_WEEKLY,
 )
-from ..core import logs as log_utils
 from ..core.logs import LogFileInfo
-from ..core import feature_flags
 
 
 def _format_size(value: int) -> str:

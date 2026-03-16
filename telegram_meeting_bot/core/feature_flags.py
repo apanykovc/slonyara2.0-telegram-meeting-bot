@@ -5,7 +5,6 @@ from typing import Dict
 from .constants import FEATURE_FLAGS_PATH
 from .storage import load_json, save_json
 
-
 DEFAULT_FLAGS: Dict[str, bool] = {
     # Master switch for error burst notifications.
     "alerts.error_burst.enabled": True,

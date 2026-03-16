@@ -1,14 +1,15 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta
 import json
 import re
+from datetime import datetime, timedelta
 from html import escape
 from typing import Any, Dict, Iterable, Sequence
 
 import pytz
 
-from ..core.constants import PAGE_SIZE, RR_DAILY, RR_ONCE, RR_WEEKLY, VERSION
+from ..core import logs as log_utils
+from ..core.constants import PAGE_SIZE, VERSION
 from ..core.logs import LogFileInfo, LogFileView
 from ..core.storage import (
     get_jobs_store,
@@ -17,8 +18,6 @@ from ..core.storage import (
     normalize_offset,
     resolve_tz_for_chat,
 )
-from ..core import logs as log_utils
-
 
 MOSCOW_TZ = pytz.timezone("Europe/Moscow")
 APP_LOG_RE = re.compile(r"^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})(?P<rest>.*)$")

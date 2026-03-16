@@ -17,104 +17,130 @@
 """
 
 import asyncio
-import os
-import re
-import uuid
-from html import escape
-import json
-import logging
 import contextvars
 import hashlib
+import json
+import logging
+import os
 import random
 import sys
 import traceback
-from types import SimpleNamespace
+import uuid
+from datetime import date, datetime, timedelta
+from html import escape
 from pathlib import Path
-from datetime import datetime, timedelta, date
-from typing import Optional, Tuple, Dict, Any, Union
+from types import SimpleNamespace
+from typing import Any, Dict, Optional, Tuple, Union
 
 import pytz
-from tzlocal import get_localzone_name
+from httpx import Timeout
 from telegram import (
-    Update,
     BotCommand,
-    User,
-    Message,
-    InlineKeyboardMarkup,
     InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
     ReplyKeyboardMarkup,
+    Update,
+    User,
 )
-from telegram.error import RetryAfter, NetworkError, BadRequest, TimedOut
+from telegram.error import BadRequest, NetworkError, RetryAfter, TimedOut
 from telegram.ext import (
     Application,
+    CallbackQueryHandler,
+    ChatMemberHandler,
+    CommandHandler,
     ContextTypes,
     MessageHandler,
-    CallbackQueryHandler,
-    CommandHandler,
-    ChatMemberHandler,
     filters,
 )
 from telegram.request import HTTPXRequest
-from httpx import Timeout
+from tzlocal import get_localzone_name
 
 from ..core.constants import (
+    ADMIN_IDS,
+    ADMIN_USERNAMES,
+    APP_LOG_RETENTION_DAYS,
+    AUDIT_LOG_RETENTION_DAYS,
+    AWAIT_ADMIN,
+    AWAIT_TZ,
     BOT_TOKEN,
+    CATCHUP_WINDOW_SECONDS,
+    CB_ACTIONS,
+    CB_ACTIVE,
+    CB_ACTIVE_PAGE,
+    CB_ADMIN_ADD,
+    CB_ADMIN_DEL,
+    CB_ADMINS,
+    CB_ARCHIVE,
+    CB_ARCHIVE_CLEAR,
+    CB_ARCHIVE_CLEAR_CONFIRM,
+    CB_ARCHIVE_PAGE,
+    CB_CANCEL,
+    CB_CHAT_DEL,
+    CB_CHATS,
+    CB_DISABLED,
+    CB_HELP,
+    CB_MENU,
+    CB_OFF_DEC,
+    CB_OFF_INC,
+    CB_OFF_PRESET_10,
+    CB_OFF_PRESET_15,
+    CB_OFF_PRESET_20,
+    CB_OFF_PRESET_30,
+    CB_PICK_CHAT,
+    CB_RRULE,
+    CB_SENDNOW,
+    CB_SET_OFFSET,
+    CB_SET_TZ,
+    CB_SET_TZ_CHICAGO,
+    CB_SET_TZ_ENTER,
+    CB_SET_TZ_LOCAL,
+    CB_SET_TZ_MOSCOW,
+    CB_SETTINGS,
+    CB_SHIFT,
+    ERROR_LOG_BACKUP_COUNT,
+    ERROR_LOG_MAX_BYTES,
     LOGS_APP_DIR,
     LOGS_AUDIT_DIR,
     LOGS_ERROR_DIR,
-    APP_LOG_RETENTION_DAYS,
-    AUDIT_LOG_RETENTION_DAYS,
-    ERROR_LOG_MAX_BYTES,
-    ERROR_LOG_BACKUP_COUNT,
-    CB_MENU, CB_SETTINGS, CB_ACTIVE, CB_ACTIVE_PAGE, CB_HELP,
-    CB_SET_TZ, CB_SET_TZ_LOCAL, CB_SET_TZ_MOSCOW, CB_SET_TZ_CHICAGO, CB_SET_TZ_ENTER,
-    CB_SET_OFFSET, CB_OFF_DEC, CB_OFF_INC, CB_OFF_PRESET_10, CB_OFF_PRESET_15,
-    CB_OFF_PRESET_20, CB_OFF_PRESET_30,
-    CB_CANCEL, CB_SHIFT, CB_SENDNOW, CB_PICK_CHAT, CB_RRULE,
-    CB_ACTIONS, CB_DISABLED,
-    CB_ADMINS, CB_ADMIN_ADD, CB_ADMIN_DEL,
-    CB_ARCHIVE, CB_ARCHIVE_CLEAR, CB_ARCHIVE_CLEAR_CONFIRM, CB_ARCHIVE_PAGE,
-    CB_CHATS, CB_CHAT_DEL,
-    RR_ONCE, RR_DAILY, RR_WEEKLY,
-    AWAIT_TZ, AWAIT_ADMIN,
-    CATCHUP_WINDOW_SECONDS, PAGE_SIZE,
-    REMINDER_TEMPLATE, MEETING_REGEX,
-    recent_signatures,
-    VERSION,
-    ADMIN_IDS,
-    ADMIN_USERNAMES,
+    MEETING_REGEX,
     OWNER_USERNAMES,
+    PAGE_SIZE,
+    REMINDER_TEMPLATE,
+    RR_DAILY,
+    RR_ONCE,
+    RR_WEEKLY,
+    VERSION,
+    recent_signatures,
 )
 from ..core.storage import (
+    add_admin_username,
+    add_job_record,
     archive_job,
-    archive_jobs_for_chat,
+    clear_archive,
+    find_job_by_text,
     get_archive_page,
-    get_cfg,
-    set_cfg,
     get_chat_cfg_entry,
-    update_chat_cfg,
+    get_job_record,
     get_jobs_for_chat,
     get_jobs_store,
-    set_jobs_store,
-    add_job_record,
-    remove_job_record,
-    get_job_record,
-    upsert_job_record,
-    find_job_by_text,
-    resolve_tz_for_chat,
-    get_offset_for_chat,
     get_known_chats,
+    get_offset_for_chat,
     register_chat,
+    remove_admin_username,
+    remove_job_record,
+    resolve_tz_for_chat,
+    set_jobs_store,
     unregister_chat,
-    clear_archive,
-    add_admin_username, remove_admin_username,
+    update_chat_cfg,
+    upsert_job_record,
 )
 from ..ui.keyboards import (
     actions_kb,
-    archive_clear_confirm_kb,
-    archive_kb,
     active_kb,
     admins_menu_kb,
+    archive_clear_confirm_kb,
+    archive_kb,
     chats_menu_kb,
     choose_chat_kb,
     job_kb,
@@ -126,16 +152,16 @@ from ..ui.keyboards import (
     tz_menu_kb,
 )
 from ..ui.texts import (
-    menu_text_for,
-    show_help_text,
-    format_job_line,
-    render_panel_text,
-    render_admins_text,
-    render_active_text,
-    render_archive_text,
-    escape_md,
     create_reminder_hint,
+    escape_md,
+    menu_text_for,
+    render_active_text,
+    render_admins_text,
+    render_archive_text,
+    render_panel_text,
+    show_help_text,
 )
+
 # ==========================
 # ----- КОНФИГ И ЛОГИ -----
 # ==========================

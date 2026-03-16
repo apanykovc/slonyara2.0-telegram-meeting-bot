@@ -10,14 +10,14 @@ import pytz
 from tzlocal import get_localzone_name
 
 from .constants import (
-    ADMINS_PATH,
     ADMIN_USERNAMES,
+    ADMINS_PATH,
     CFG_PATH,
     DEFAULT_TZ_NAME,
     JOBS_DB_PATH,
     LEGACY_JOBS_PATH,
-    OWNERS_META_PATH,
     OWNER_USERNAMES,
+    OWNERS_META_PATH,
     TARGETS_PATH,
 )
 

@@ -1,5 +1,6 @@
-import pytest
 from datetime import datetime, timedelta, tzinfo
+
+import pytest
 
 from telegram_meeting_bot.core import parsing as core_parsing
 
