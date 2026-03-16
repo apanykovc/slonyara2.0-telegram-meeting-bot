@@ -209,7 +209,8 @@ def test_resolve_tz_uses_default_moscow(monkeypatch: pytest.MonkeyPatch) -> None
     monkeypatch.delenv("ORG_TZ", raising=False)
     monkeypatch.setattr(storage, "DEFAULT_TZ_NAME", "Europe/Moscow", raising=False)
     monkeypatch.setattr(storage, "get_chat_cfg_entry", lambda _cid: {})
-    assert storage.resolve_tz_for_chat(100) == "Europe/Moscow"
+    tz = storage.resolve_tz_for_chat(100)
+    assert getattr(tz, "zone", tz) == "Europe/Moscow"
 
 
 def test_resolve_tz_invalid_chat_falls_back(monkeypatch: pytest.MonkeyPatch) -> None:
