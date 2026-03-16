@@ -6,5 +6,5 @@ services:
     env_file:
       - .env
     volumes:
-      - /root/slonyara2.0/data:/app/data
+      - ./data:/app/data
     command: ["python", "-m", "telegram_meeting_bot"]
