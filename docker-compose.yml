@@ -1,0 +1,10 @@
+services:
+  bot:
+    build: .
+    container_name: slonyara2.0
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - /root/slonyara2.0/data:/app/data
+    command: ["python", "-m", "telegram_meeting_bot"]
