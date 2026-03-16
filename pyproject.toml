@@ -1,6 +1,11 @@
 [tool.ruff]
 line-length = 100
 target-version = "py312"
+extend-exclude = ["telegram_meeting_bot/legacy"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["E402"]

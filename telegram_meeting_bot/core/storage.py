@@ -453,7 +453,7 @@ def resolve_tz_for_chat(chat_id: int) -> pytz.BaseTzInfo:
     if tz_name:
         try:
             return pytz.timezone(tz_name)
-        except pytz.UnknownTimeZoneError as e:
+        except Exception as e:
             logger.warning(
                 "Некорректная TZ '%s' для чата %s (%s). Используем дефолт.",
                 tz_name,
@@ -464,7 +464,7 @@ def resolve_tz_for_chat(chat_id: int) -> pytz.BaseTzInfo:
     fallback_tz = get_org_tz_name()
     try:
         return pytz.timezone(fallback_tz)
-    except pytz.UnknownTimeZoneError as e:
+    except Exception as e:
         logger.warning(
             "Некорректная дефолтная TZ '%s' (%s). Падаем на UTC.",
             fallback_tz,

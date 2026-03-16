@@ -36,6 +36,7 @@ import pytz
 from httpx import Timeout
 from telegram import (
     BotCommand,
+    CallbackQuery,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     Message,
@@ -951,8 +952,11 @@ def parse_meeting_message(text: str, tz: pytz.BaseTzInfo) -> Optional[Dict[str, 
         return None
     day_str, month_str, mtype, time_str_raw, room, ticket = m.groups()
     try:
-        d = int(day_str); mth = int(month_str)
-        hh, mm = time_str_raw.replace(".", ":", 1).split(":"); hh = int(hh); mm = int(mm)
+        d = int(day_str)
+        mth = int(month_str)
+        hh, mm = time_str_raw.replace(".", ":", 1).split(":")
+        hh = int(hh)
+        mm = int(mm)
     except Exception:
         return None
 
@@ -2924,5 +2928,3 @@ def main() -> None:
     app_log("бот запущен", v=VERSION)
     app.run_polling()
     app_log("корректная остановка")
-
-
